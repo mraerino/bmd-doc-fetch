@@ -3,7 +3,8 @@
 import urllib.request
 import json
 import os
-import html
+import html.parser
+h = html.parser.HTMLParser()
 
 download_url = "http://www.blackmagicdesign.com/api/support/us/downloads.json"
 nav_url = "http://www.blackmagicdesign.com/api/support/us/nav.json"
@@ -20,9 +21,9 @@ with urllib.request.urlopen(nav_url) as req:
     nav = json.loads(str(req.read(), encoding='UTF-8'))
 
 for obj in struc:
-    common_name = html.unescape(nav['families'][obj['relatedFamilies'][0]]['family_name'].replace('<br>', ' '))
-    common_dir = path + "\\" + common_name
-    dir_name = common_dir + "\\" + obj['name']
+    common_name = h.unescape(nav['families'][obj['relatedFamilies'][0]]['family_name'].replace('<br>', ' '))
+    common_dir = path + os.sep + common_name
+    dir_name = common_dir + os.sep + obj['name']
 
     # Ordner finden und ggf. erstellen
     if os.path.isdir(common_dir):
@@ -52,5 +53,5 @@ for obj in struc:
     for url in downloads:
         print("Downloading " + obj['name'] + "...")
         print(url)
-        urlOpener.retrieve(url, dir_name + "\\" + os.path.basename(url))
+        urlOpener.retrieve(url, dir_name + os.sep + os.path.basename(url))
 
