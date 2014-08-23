@@ -3,12 +3,16 @@
 import urllib.request
 import json
 import os
+import sys
 import html.parser
 h = html.parser.HTMLParser()
 
 download_url = "http://www.blackmagicdesign.com/api/support/us/downloads.json"
 nav_url = "http://www.blackmagicdesign.com/api/support/us/nav.json"
 path = "C:\\Users\\Marcus\\BILDQUADRAT\\BMD_Download"
+
+if len(sys.argv) == 2:
+    path = sys.argv[1]
 
 class MyURLopener(urllib.request.FancyURLopener):
     version = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:31.0) Gecko/20100101 Firefox/31.0"
@@ -36,7 +40,11 @@ for obj in struc:
     downloads = []
     for platform in obj['platforms']:
         if 'readme' in obj['urls'][platform]:
-            downloads.append("http:" + obj['urls'][platform]['readme'])
+            elem = obj['urls'][platform]['readme']
+            if not elem.startswith('http:'):
+                elem = 'http:'+elem
+            downloads.append(elem)
+
         # Downloadlink per api holen
         link_url = "http://www.blackmagicdesign.com/api/register/us/download/" + str(obj['urls'][platform]['downloadId'])
         payload = '{"country":"us","platform":"' + platform + '"}'
@@ -48,10 +56,13 @@ for obj in struc:
             with urllib.request.urlopen(req) as resp:
                 downloads.append(str(resp.read(), encoding='UTF-8'))
         except:
-            print("Could not load '" + obj['name'] + "'")
+            print("Error: Could not load '" + obj['name'] + "'")
 
     for url in downloads:
         print("Downloading " + obj['name'] + "...")
         print(url)
-        urlOpener.retrieve(url, dir_name + os.sep + os.path.basename(url))
+        try:
+            urlOpener.retrieve(url, dir_name + os.sep + os.path.basename(url))
+        except:
+            print("Error: Could not load '" + os.path.basename(url) + "'")
 
